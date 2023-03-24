@@ -19,7 +19,8 @@ class User(AbstractUser):
         default='user'
     )
 
-    username = models.CharField('Имя пользователя', blank=True, unique=True, max_length=128)
+    username = models.CharField('Имя пользователя', blank=True,
+                                unique=True, max_length=128)
     email = models.EmailField('email address', blank=True, unique=True)
     first_name = models.CharField('Имя', blank=True, max_length=128)
     last_name = models.CharField('Фамилия', blank=True, max_length=128)
@@ -62,4 +63,3 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-

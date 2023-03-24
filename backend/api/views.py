@@ -1,25 +1,26 @@
 from django.http import HttpResponse
-from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
-from reportlab.pdfbase import pdfmetrics, ttfonts
-from reportlab.pdfgen import canvas
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from rest_framework.views import APIView
+from reportlab.pdfbase import pdfmetrics, ttfonts
+from reportlab.pdfgen import canvas
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action
-from .serializers import TagSerializer, IngredientSerializer, RecipeSerializer, FavoriteSerializer, ShoppingCartSerializer, FollowSerializer, UserSerializer
-from .permissions import IsAuthorOrReadOnly
-from .filters import IngredientFilter
+
+from .serializers import (
+    TagSerializer, IngredientSerializer, RecipeSerializer,
+    FavoriteSerializer, ShoppingCartSerializer,
+    FollowSerializer, UserSerializer
+)
+from api.permissions import IsAuthorOrReadOnly
+from api.filters import IngredientFilter
 from recipes.models import Tag, Recipe, Ingredient, RecipeIngredient
 from users.models import User, Follow
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
-    """Вьюсет для обработки запросов на получение ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -62,6 +63,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 object.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Этого рецепта нет в списке'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Неверный запрос'},
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['POST', 'DELETE'], detail=True)
@@ -107,9 +111,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class UsersViewSet(UserViewSet):
-    """Вьюсет для работы с пользователями и подписками.
-    Обработка запросов на создание/получение пользователей и
-    создание/получение/удаления подписок."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
@@ -120,8 +121,6 @@ class UsersViewSet(UserViewSet):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
         return super().get_permissions()
-
-
 
     @action(methods=['POST', 'DELETE'],
             detail=True)
@@ -147,6 +146,9 @@ class UsersViewSet(UserViewSet):
                 subscription.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Вы не подписаны на этого пользователя'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({'error': 'Неверный запрос'},
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, permission_classes=[permissions.IsAuthenticated])

@@ -1,19 +1,18 @@
 import base64
 
-from django.db import transaction
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.files.base import ContentFile
+from django.db import transaction
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingCart, Favorite)
 from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 from rest_framework.validators import UniqueTogetherValidator
 from users.models import User, Follow
-from rest_framework.fields import SerializerMethodField
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredient, ShoppingCart, Favorite
-from djoser.serializers import UserCreateSerializer, UserSerializer
-from django.core.files.base import ContentFile
 
 
 class Base64ImageField(serializers.ImageField):
-    """Кастомное поле для кодирования изображения в base64."""
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
@@ -24,10 +23,10 @@ class Base64ImageField(serializers.ImageField):
 
 
 class SignUpSerializer(UserCreateSerializer):
-
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password')
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'password')
         extra_kwargs = {'password': {'write_only': True}}
         validators = [
             UniqueTogetherValidator(
@@ -43,7 +42,7 @@ class SignUpSerializer(UserCreateSerializer):
             raise serializers.ValidationError(
                 'Нельзя использовать в качестве имени Me')
         return data
-    
+
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
         user.set_password(validated_data['password'])
@@ -68,7 +67,6 @@ class UserSerializer(UserSerializer):
 
 
 class FollowSerializer(UserSerializer):
-    """Сериализатор для добавления/удаления подписки, просмотра подписок."""
     recipes = SerializerMethodField(read_only=True)
     recipes_count = SerializerMethodField(read_only=True)
 
@@ -103,7 +101,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор для подробного описания ингредиентов в рецепте."""
     name = serializers.CharField(
         source='ingredient.name', read_only=True)
     id = serializers.PrimaryKeyRelatedField(
@@ -117,7 +114,6 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор для добавления ингредиента при создании рецепта."""
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all(),
         source='ingredient')
@@ -159,7 +155,6 @@ class RecipeSerializer(serializers.ModelSerializer):
             return False
         return object.shopping_cart.filter(user=user).exists()
 
-
     @transaction.atomic
     def create(self, validated_data):
         user = self.context.get('request').user
@@ -183,14 +178,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         self.get_ingredients(instance, ingredients)
 
         return super().update(instance, validated_data)
-    
+
     def to_representation(self, instance):
         context = {'request': self.context.get('request')}
         return GetRecipeSerializer(instance, context=context).data
 
 
 class GetRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для отображения полной информации о рецепте."""
     tags = TagSerializer(many=True)
     author = UserSerializer(read_only=True)
     ingredients = RecipeIngredientSerializer(read_only=True, many=True,
@@ -218,7 +212,6 @@ class GetRecipeSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    """Сериализатор добавления/удаления рецепта в избранное."""
     class Meta:
         model = Favorite
         fields = ('user', 'recipe')
@@ -237,13 +230,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(FavoriteSerializer):
-    """Сериализатор добавления/удаления рецепта в список покупок."""
     class Meta(FavoriteSerializer.Meta):
         model = ShoppingCart
 
 
 class RecipeInfoSerializer(serializers.ModelSerializer):
-    """Сериализатор для отображения краткой информации о рецепте."""
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
