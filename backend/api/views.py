@@ -5,19 +5,19 @@ from djoser.views import UserViewSet
 from reportlab.pdfbase import pdfmetrics, ttfonts
 from reportlab.pdfgen import canvas
 from rest_framework import permissions, status, viewsets
-from rest_framework.response import Response
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
-from .serializers import (
-    TagSerializer, IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShoppingCartSerializer,
-    FollowSerializer, UserSerializer
+from api.serializers import (
+    FavoriteSerializer, FollowSerializer,
+    IngredientSerializer, RecipeSerializer,
+    ShoppingCartSerializer, TagSerializer, UserSerializer
 )
-from api.permissions import IsAuthorOrReadOnly
 from api.filters import IngredientFilter
-from recipes.models import Tag, Recipe, Ingredient, RecipeIngredient
-from users.models import User, Follow
+from api.permissions import IsAuthorOrReadOnly
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
+from users.models import Follow, User
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,9 +64,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Этого рецепта нет в списке'},
                             status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'error': 'Неверный запрос'},
-                            status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Неверный запрос'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['POST', 'DELETE'], detail=True)
     def favorite(self, request, pk):
@@ -78,6 +77,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False)
     def download_shopping_cart(self, request):
+        font_size = 14
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = (
             "attachment; filename='shopping_cart.pdf'"
@@ -85,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         p = canvas.Canvas(response)
         arial = ttfonts.TTFont('Arial', '../data/arial.ttf')
         pdfmetrics.registerFont(arial)
-        p.setFont('Arial', 14)
+        p.setFont('Arial', font_size)
 
         ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=request.user).values_list(
@@ -97,14 +97,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 ingr_list[name] = {'amount': amount, 'unit': unit}
             else:
                 ingr_list[name]['amount'] += amount
+        body_x = 80
         height = 700
-
-        p.drawString(100, 750, 'Список покупок')
+        new_line_height = 25
+        header_x = 100
+        header_y = 750
+        p.drawString(header_x, header_y, 'Список покупок')
         for i, (name, data) in enumerate(ingr_list.items(), start=1):
             p.drawString(
-                80, height,
+                body_x, height,
                 f"{i}. {name} – {data['amount']} {data['unit']}")
-            height -= 25
+            height -= new_line_height
         p.showPage()
         p.save()
         return response
@@ -147,9 +150,8 @@ class UsersViewSet(UserViewSet):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response({'error': 'Вы не подписаны на этого пользователя'},
                             status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({'error': 'Неверный запрос'},
-                            status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Неверный запрос'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):

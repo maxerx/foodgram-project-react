@@ -35,6 +35,10 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['username']
+
+    def __str__(self):
+        return f'{self.username}'
 
 
 class Follow(models.Model):
@@ -52,9 +56,6 @@ class Follow(models.Model):
         verbose_name='Автор'
     )
 
-    def __str__(self):
-        return f'Автор: {self.author}, подписчик: {self.user}'
-
     def save(self, **kwargs):
         if self.user == self.author:
             raise ValidationError("Невозможно подписаться на себя")
@@ -63,3 +64,7 @@ class Follow(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        ordering = ['-author_id']
+
+    def __str__(self):
+        return f'Автор: {self.author}, подписчик: {self.user}'

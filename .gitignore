@@ -134,3 +134,6 @@ dmypy.json
 #static
 /backend/static/
 /backend/media/
+
+# .vscode
+.vscode

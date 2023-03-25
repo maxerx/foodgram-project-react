@@ -4,12 +4,13 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingCart, Favorite)
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from rest_framework.validators import UniqueTogetherValidator
-from users.models import User, Follow
+
+from recipes.models import (Ingredient, Favorite, Recipe, RecipeIngredient,
+                            ShoppingCart, Tag)
+from users.models import Follow, User
 
 
 class Base64ImageField(serializers.ImageField):
@@ -133,7 +134,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients',
                   'name', 'image', 'text', 'cooking_time')
 
-    def get_ingredients(self, recipe, ingredients):
+    def create_ingredients(self, recipe, ingredients):
         RecipeIngredient.objects.bulk_create(
             RecipeIngredient(
                 recipe=recipe,
@@ -163,7 +164,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(author=user,
                                        **validated_data)
         recipe.tags.set(tags)
-        self.get_ingredients(recipe, ingredients)
+        self.create_ingredients(recipe, ingredients)
 
         return recipe
 
