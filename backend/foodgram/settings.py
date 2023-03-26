@@ -36,7 +36,8 @@ ALLOWED_HOSTS = [
     '[::1]',
     'testserver',
     'web',
-    '51.250.20.2'
+    '51.250.20.2',
+    'mxrfoodgram.hopto.org'
 ]
 
 
