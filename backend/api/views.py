@@ -14,7 +14,7 @@ from api.serializers import (
     IngredientSerializer, RecipeSerializer,
     ShoppingCartSerializer, TagSerializer, UserSerializer
 )
-from api.filters import IngredientFilter
+from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
 from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 from users.models import Follow, User
@@ -41,6 +41,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def action_post_delete(self, pk, serializer_class):
         user = self.request.user
