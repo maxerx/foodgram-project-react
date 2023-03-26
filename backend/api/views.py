@@ -83,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             "attachment; filename='shopping_cart.pdf'"
         )
         p = canvas.Canvas(response)
-        arial = ttfonts.TTFont('Arial', './data/arial.ttf')
+        arial = ttfonts.TTFont('Arial', 'data/arial.ttf')
         pdfmetrics.registerFont(arial)
         p.setFont('Arial', font_size)
 
