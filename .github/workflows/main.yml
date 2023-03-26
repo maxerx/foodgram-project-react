@@ -20,7 +20,7 @@ jobs:
       uses: docker/build-push-action@v2 
       with:
         push: true
-        context: ./foodgram/
+        context: ./backend/
         tags: xmaxerx/foodgram:v1.01.0001
   deploy:
     runs-on: ubuntu-latest
