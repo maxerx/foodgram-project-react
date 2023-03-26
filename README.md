@@ -1,1 +1,1 @@
-# praktikum_new_diplom
+![](https://github.com/maxerx/yamdb_final/actions/workflows/yamdb_workflow.yml/badge.svg)
