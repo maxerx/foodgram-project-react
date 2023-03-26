@@ -83,7 +83,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             "attachment; filename='shopping_cart.pdf'"
         )
         p = canvas.Canvas(response)
-        arial = ttfonts.TTFont('Arial', '../data/arial.ttf')
+        arial = ttfonts.TTFont('Arial', './data/arial.ttf')
         pdfmetrics.registerFont(arial)
         p.setFont('Arial', font_size)
 
@@ -100,7 +100,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         body_x = 80
         height = 700
         new_line_height = 25
-        header_x = 100
+        header_x = 250
         header_y = 750
         p.drawString(header_x, header_y, 'Список покупок')
         for i, (name, data) in enumerate(ingr_list.items(), start=1):
