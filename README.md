@@ -104,6 +104,6 @@ python manage.py runserver
 
 Разработчик: Мокрушин Илья [https://github.com/maxerx/](https://github.com/maxerx/)
 
-Проект доступен по адресу: [http://mxrfoodgram.hopto.org/](http://mxrfoodgram.hopto.org/)
+Проект доступен по адресу: [http://51.250.20.2/](http://51.250.20.2/)
 
-Документация к API проекта: [http://mxrfoodgram.hopto.org/api/docs/](http://mxrfoodgram.hopto.org/api/docs/)
+Документация к API проекта: [http://51.250.20.2/api/docs/](http://51.250.20.2/api/docs/)
